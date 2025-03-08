@@ -22,6 +22,9 @@ class GalleryViewModel @Inject constructor(
     private val _selectedAlbumMedia = MutableStateFlow<Pair<Album, List<MediaItem>>?>(null)
     val selectedAlbumMedia: StateFlow<Pair<Album, List<MediaItem>>?> = _selectedAlbumMedia
 
+    private val _selectedMediaItem = MutableStateFlow<MediaItem?>(null)
+    val selectedMediaItem: StateFlow<MediaItem?> = _selectedMediaItem
+
     init {
         loadAlbumsWithMedia()
     }
@@ -41,5 +44,9 @@ class GalleryViewModel @Inject constructor(
                 _selectedAlbumMedia.value = Pair(it, mediaItems)
             }
         }
+    }
+
+    fun onMediaClick(mediaItem: MediaItem) {
+        _selectedMediaItem.value = mediaItem
     }
 }

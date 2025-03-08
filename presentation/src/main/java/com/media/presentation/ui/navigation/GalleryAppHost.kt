@@ -9,6 +9,7 @@ import androidx.navigation.compose.rememberNavController
 import com.media.presentation.ui.Screen
 import com.media.presentation.ui.album.AlbumsScreen
 import com.media.presentation.ui.albumdetail.AlbumDetailScreen
+import com.media.presentation.ui.mediaviewer.MediaViewerScreen
 import com.media.presentation.viewmodel.GalleryViewModel
 
 @SuppressLint("ContextCastToActivity")
@@ -43,11 +44,21 @@ fun GalleryAppHost(viewModel: GalleryViewModel, onFinish: () -> Unit) {
                 AlbumDetailScreen(
                     albumPair = selectedAlbumMedia,
                     onMediaClick = { mediaItem ->
+                        viewModel.onMediaClick(mediaItem)
+                        navController.navigate(Screen.MediaViewer.route)
                     },
                     onBackClick = {
                         navController.popBackStack()
                     }
                 )
+            }
+        }
+
+        composable(route = Screen.MediaViewer.route) {
+            val selectedMediaItem = viewModel.selectedMediaItem.collectAsState().value
+
+            if (selectedMediaItem != null) {
+                MediaViewerScreen(mediaItem = selectedMediaItem)
             }
         }
     }
