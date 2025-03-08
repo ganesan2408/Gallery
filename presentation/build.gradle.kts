@@ -58,6 +58,7 @@ dependencies {
     implementation(libs.accompanist.permissions)
 
     implementation(libs.hilt.android)
+    implementation(libs.androidx.material.icons.extended)
     kapt(libs.hilt.android.compiler)
 
     implementation(libs.coil.compose)

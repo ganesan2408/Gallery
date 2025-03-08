@@ -13,10 +13,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.GridView
+import androidx.compose.material.icons.filled.ViewList
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -28,8 +31,13 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -54,6 +62,8 @@ fun AlbumsScreen(
 
     val permissionState = rememberMultiplePermissionsState(permissions = permissions)
 
+    var isGridView by rememberSaveable { mutableStateOf(true) }
+
     LaunchedEffect(permissionState.allPermissionsGranted) {
         if (permissionState.allPermissionsGranted) {
             reloadAlbums()
@@ -72,15 +82,38 @@ fun AlbumsScreen(
                         contentDescription = "Back"
                     )
                 }
+            },
+            actions = {
+                IconButton(onClick = { isGridView = !isGridView }) {
+                    if (isGridView) {
+                        Icon(
+                            imageVector = Icons.Default.ViewList,
+                            contentDescription = "Switch to List View"
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.Default.GridView,
+                            contentDescription = "Switch to Grid View"
+                        )
+                    }
+                }
             }
         )
         if (permissionState.allPermissionsGranted) {
-            LazyVerticalGrid(
-                columns = GridCells.Adaptive(minSize = 150.dp),
-                modifier = Modifier.fillMaxSize()
-            ) {
-                items(albums.size) { index ->
-                    AlbumCard(album = albums[index], onAlbumClick = onAlbumClick)
+            if (isGridView) {
+                LazyVerticalGrid(
+                    columns = GridCells.Adaptive(minSize = 150.dp),
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    items(albums.size) { index ->
+                        AlbumCard(album = albums[index], onAlbumClick = onAlbumClick)
+                    }
+                }
+            } else {
+                LazyColumn(modifier = Modifier.fillMaxSize()) {
+                    items(albums.size) { index ->
+                        AlbumListItem(album = albums[index], onAlbumClick = onAlbumClick)
+                    }
                 }
             }
         } else {
@@ -115,6 +148,36 @@ fun AlbumCard(album: Album, onAlbumClick: (Album) -> Unit) {
                 Text(text = album.name, modifier = Modifier.weight(1f))
                 Text(text = "${album.count}")
             }
+        }
+    }
+}
+
+@Composable
+fun AlbumListItem(album: Album, onAlbumClick: (Album) -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onAlbumClick(album) }
+            .padding(8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        AsyncImage(
+            model = album.mediaItem.getMediaPath(),
+            contentDescription = "Album Cover",
+            modifier = Modifier
+                .size(64.dp)
+                .padding(end = 8.dp),
+            contentScale = ContentScale.Crop
+        )
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = album.name,
+                style = MaterialTheme.typography.bodyMedium
+            )
+            Text(
+                text = "${album.count} items",
+                style = MaterialTheme.typography.bodySmall
+            )
         }
     }
 }
