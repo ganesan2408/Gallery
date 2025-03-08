@@ -22,7 +22,7 @@ class GalleryViewModel @Inject constructor(
         loadAlbumsWithMedia()
     }
 
-    private fun loadAlbumsWithMedia() {
+    fun loadAlbumsWithMedia() {
         viewModelScope.launch {
             val albums = getAlbumsUseCase.getAlbums()
             _albumsWithMedia.value = albums
