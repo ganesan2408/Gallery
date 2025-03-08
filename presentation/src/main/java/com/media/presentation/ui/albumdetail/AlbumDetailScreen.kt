@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.PlayArrow
@@ -72,6 +73,7 @@ fun AlbumDetailScreen(
 fun MediaItemGrid(mediaPaths: List<MediaItem>, onMediaClick: (MediaItem) -> Unit) {
     LazyVerticalGrid(
         columns = GridCells.Adaptive(minSize = 120.dp),
+        state = rememberLazyGridState(),
         modifier = Modifier
             .fillMaxSize()
             .padding(1.dp),
@@ -96,7 +98,9 @@ fun MediaItem(mediaPath: MediaItem, onMediaClick: (MediaItem) -> Unit) {
     ) {
         Box(
             contentAlignment = Alignment.BottomCenter,
-            modifier = Modifier.fillMaxSize().padding(1.dp)
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(1.dp)
         ) {
             when (mediaPath) {
                 is MediaItem.Video -> {

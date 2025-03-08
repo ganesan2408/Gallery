@@ -16,6 +16,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.GridView
@@ -67,6 +69,8 @@ fun AlbumsScreen(
 
     var isGridView by rememberSaveable { mutableStateOf(true) }
 
+    val gridState = rememberLazyGridState()
+
     LaunchedEffect(permissionState.allPermissionsGranted) {
         if (permissionState.allPermissionsGranted) {
             reloadAlbums()
@@ -106,6 +110,7 @@ fun AlbumsScreen(
             if (isGridView) {
                 LazyVerticalGrid(
                     columns = GridCells.Adaptive(minSize = 150.dp),
+                    state = rememberLazyGridState(),
                     modifier = Modifier.fillMaxSize()
                 ) {
                     items(albums.size) { index ->
@@ -113,7 +118,7 @@ fun AlbumsScreen(
                     }
                 }
             } else {
-                LazyColumn(modifier = Modifier.fillMaxSize()) {
+                LazyColumn(modifier = Modifier.fillMaxSize(), state = rememberLazyListState()) {
                     items(albums.size) { index ->
                         AlbumListItem(album = albums[index], onAlbumClick = onAlbumClick)
                     }
