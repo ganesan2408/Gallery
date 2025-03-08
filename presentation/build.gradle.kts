@@ -59,6 +59,7 @@ dependencies {
 
     implementation(libs.hilt.android)
     implementation(libs.androidx.material.icons.extended)
+    implementation(libs.coil.video)
     kapt(libs.hilt.android.compiler)
 
     implementation(libs.coil.compose)

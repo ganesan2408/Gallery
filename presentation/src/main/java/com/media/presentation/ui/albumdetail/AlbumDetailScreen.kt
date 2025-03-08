@@ -25,8 +25,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.media.domain.model.Album
 import com.media.domain.model.MediaItem
 
@@ -87,21 +90,40 @@ fun MediaItem(mediaPath: MediaItem, onMediaClick: (MediaItem) -> Unit) {
     Card(
         modifier = Modifier
             .padding(8.dp)
-            .fillMaxWidth()
+            .size(120.dp)
             .clickable { onMediaClick(mediaPath) },
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.padding(1.dp)
+        Box(
+            contentAlignment = Alignment.BottomCenter,
+            modifier = Modifier.fillMaxSize().padding(1.dp)
         ) {
-            AsyncImage(
-                model = mediaPath.getMediaPath(),
-                contentDescription = "Album Cover",
-                modifier = Modifier
-                    .size(120.dp)
-                    .padding(bottom = 1.dp)
-            )
+            when (mediaPath) {
+                is MediaItem.Video -> {
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(mediaPath.path)
+                            .decoderFactory(coil.decode.VideoFrameDecoder.Factory())
+                            .build(),
+                        contentDescription = "Media Cover",
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(bottom = 1.dp),
+                        contentScale = ContentScale.Crop
+                    )
+                }
+
+                is MediaItem.Image -> {
+                    AsyncImage(
+                        model = mediaPath.path,
+                        contentDescription = "Media Cover",
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(bottom = 1.dp),
+                        contentScale = ContentScale.Crop
+                    )
+                }
+            }
 
             if (isVideo) {
                 Icon(

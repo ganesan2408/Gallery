@@ -38,13 +38,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.media.domain.model.Album
+import com.media.domain.model.MediaItem
 
 @OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -133,14 +136,25 @@ fun AlbumCard(album: Album, onAlbumClick: (Album) -> Unit) {
             .clickable { onAlbumClick(album) }
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
-            if (!album.mediaItem.getMediaPath().isNullOrEmpty()) {
-                AsyncImage(
-                    model = album.mediaItem.getMediaPath(),
-                    contentDescription = "Album Cover",
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(bottom = 1.dp)
-                )
+            when (val mediaItem = album.mediaItem) {
+                is MediaItem.Video -> {
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(mediaItem.path)
+                            .decoderFactory(coil.decode.VideoFrameDecoder.Factory())
+                            .build(),
+                        contentDescription = "Video Frame",
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
+
+                is MediaItem.Image -> {
+                    AsyncImage(
+                        model = mediaItem.path,
+                        contentDescription = "Album Cover",
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
             }
             Row(modifier = Modifier
                 .padding(horizontal = 8.dp)
@@ -161,14 +175,32 @@ fun AlbumListItem(album: Album, onAlbumClick: (Album) -> Unit) {
             .padding(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        AsyncImage(
-            model = album.mediaItem.getMediaPath(),
-            contentDescription = "Album Cover",
-            modifier = Modifier
-                .size(64.dp)
-                .padding(end = 8.dp),
-            contentScale = ContentScale.Crop
-        )
+        when (val mediaItem = album.mediaItem) {
+            is MediaItem.Video -> {
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(mediaItem.path)
+                        .decoderFactory(coil.decode.VideoFrameDecoder.Factory())
+                        .build(),
+                    contentDescription = "Album Cover",
+                    modifier = Modifier
+                        .size(64.dp)
+                        .padding(end = 8.dp),
+                    contentScale = ContentScale.Crop
+                )
+            }
+
+            is MediaItem.Image -> {
+                AsyncImage(
+                    model = mediaItem.path,
+                    contentDescription = "Album Cover",
+                    modifier = Modifier
+                        .size(64.dp)
+                        .padding(end = 8.dp),
+                    contentScale = ContentScale.Crop
+                )
+            }
+        }
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = album.name,
