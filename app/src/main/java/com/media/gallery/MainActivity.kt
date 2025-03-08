@@ -25,7 +25,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             GalleryTheme {
                 GalleryAppHost(viewModel = galleryViewModel) {
-                    finish()
+                    onBackPressedDispatcher.onBackPressed()
                 }
             }
         }
