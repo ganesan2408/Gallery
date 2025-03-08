@@ -23,3 +23,4 @@ rootProject.name = "Gallery"
 include(":app")
 include(":domain")
 include(":data")
+include(":di")
