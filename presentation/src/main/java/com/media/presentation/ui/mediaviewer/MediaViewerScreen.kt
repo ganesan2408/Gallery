@@ -1,14 +1,13 @@
 package com.media.presentation.ui.mediaviewer
 
+import android.widget.MediaController
 import android.widget.VideoView
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import coil.compose.AsyncImage
 import com.media.domain.model.MediaItem
@@ -17,8 +16,7 @@ import com.media.domain.model.MediaItem
 fun MediaViewerScreen(mediaItem: MediaItem) {
     Box(
         modifier = Modifier
-            .fillMaxSize()
-            .padding(8.dp),
+            .fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
         when (mediaItem) {
@@ -27,17 +25,22 @@ fun MediaViewerScreen(mediaItem: MediaItem) {
                 AndroidView(
                     factory = { context ->
                         VideoView(context).apply {
-                            setVideoPath(mediaItem.getMediaPath())
-                            start()
+                            val mediaController = MediaController(context)
+                            mediaController.setAnchorView(this)
+                            setVideoPath(mediaItem.path)
+                            setMediaController(mediaController)
+                            setOnPreparedListener {
+                                start()
+                            }
                         }
                     },
                     modifier = Modifier.fillMaxSize()
                 )
             }
 
-            else -> {
+            is MediaItem.Image -> {
                 AsyncImage(
-                    model = mediaItem.getMediaPath(),
+                    model = mediaItem.path,
                     contentDescription = "Image Viewer",
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Fit
