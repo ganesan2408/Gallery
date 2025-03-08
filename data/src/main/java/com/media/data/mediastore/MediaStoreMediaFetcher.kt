@@ -12,22 +12,28 @@ class MediaStoreMediaFetcher @Inject constructor(private val context: Context) {
     suspend fun fetchMediaForAlbum(albumName: String): List<MediaItem> {
         val mediaItems = mutableListOf<MediaItem>()
         val contentResolver: ContentResolver = context.contentResolver
+        val isAllMedia = albumName == AlbumConstants.ALL_IMAGES || albumName == AlbumConstants.ALL_VIDEOS
 
-        MediaStoreHelper.queryContentResolver(
-            contentResolver,
-            MediaStore.Files.getContentUri("external"),
-            arrayOf(
-                MediaStore.Files.FileColumns.BUCKET_DISPLAY_NAME,
-                MediaStore.Files.FileColumns.DATA,
-                MediaStore.Files.FileColumns.MEDIA_TYPE
-            ),
-            "${MediaStore.Files.FileColumns.BUCKET_DISPLAY_NAME} = ? AND ${MediaStore.Files.FileColumns.MEDIA_TYPE} IN (?, ?)",
-            arrayOf(
+        val selection = when (albumName) {
+            AlbumConstants.ALL_IMAGES, AlbumConstants.ALL_VIDEOS -> "${MediaStore.Files.FileColumns.MEDIA_TYPE} = ?"
+            else -> "${MediaStore.Files.FileColumns.BUCKET_DISPLAY_NAME} = ? AND ${MediaStore.Files.FileColumns.MEDIA_TYPE} IN (?, ?)"
+        }
+        val selectionArgs = when (albumName) {
+            AlbumConstants.ALL_IMAGES -> arrayOf(MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE.toString())
+            AlbumConstants.ALL_VIDEOS -> arrayOf(MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO.toString())
+            else -> arrayOf(
                 albumName,
                 MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE.toString(),
                 MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO.toString()
-            ),
-            null
+            )
+        }
+
+        MediaStoreHelper.queryContentResolver(
+            contentResolver, MediaStore.Files.getContentUri("external"), arrayOf(
+                MediaStore.Files.FileColumns.BUCKET_DISPLAY_NAME,
+                MediaStore.Files.FileColumns.DATA,
+                MediaStore.Files.FileColumns.MEDIA_TYPE
+            ), selection, selectionArgs, null
         )?.use { cursor ->
             val dataColumn = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.DATA)
             val mediaTypeColumn =

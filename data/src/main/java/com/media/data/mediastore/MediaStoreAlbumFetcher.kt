@@ -11,6 +11,11 @@ import javax.inject.Inject
 class MediaStoreAlbumFetcher @Inject constructor(private val context: Context) {
 
     suspend fun getAlbums(): List<Album> {
+        var allImagesCount = 0
+        var allVideosCount = 0
+        var allImagesCover: String? = null
+        var allVideosCover: String? = null
+
         val albums = mutableMapOf<String, Triple<String, MediaItem, Int>>()
         val contentResolver: ContentResolver = context.contentResolver
 
@@ -39,22 +44,45 @@ class MediaStoreAlbumFetcher @Inject constructor(private val context: Context) {
                 val bucketName = cursor.getString(bucketColumn) ?: "Unknown"
                 val mediaPath = cursor.getString(dataColumn)
                 val mediaType = cursor.getInt(mediaTypeColumn)
+                val mediaItem: MediaItem? = when (mediaType) {
+                    MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO -> {
+                        allVideosCount++
+                        if (allVideosCover == null) allVideosCover = mediaPath
+                        MediaItem.Video(mediaPath)
+                    }
 
-                if (mediaPath != null) {
-                    val mediaItem =
-                        if (mediaType == MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO) MediaItem.Video(
-                            mediaPath
-                        )
-                        else MediaItem.Image(mediaPath)
+                    MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE -> {
+                        allImagesCount++
+                        if (allImagesCover == null) allImagesCover = mediaPath
+                        MediaItem.Image(mediaPath)
+                    }
 
+                    else -> {
+                        null
+                    }
+                }
+
+                if (mediaItem != null) {
                     val currentCount = albums[bucketName]?.third ?: 0
                     albums[bucketName] = Triple(mediaPath, mediaItem, currentCount + 1)
                 }
             }
         }
-
-        return albums.map { (name, value) ->
+        val albumsList = albums.map { (name, value) ->
             Album(name = name, mediaItem = value.second, count = value.third)
         }
+        val allMedias = arrayListOf(
+            Album(
+                name = AlbumConstants.ALL_IMAGES,
+                mediaItem = MediaItem.Image(allImagesCover),
+                count = allImagesCount
+            ),
+            Album(
+                name = AlbumConstants.ALL_VIDEOS,
+                mediaItem = MediaItem.Image(allVideosCover),
+                count = allVideosCount
+            )
+        )
+        return allMedias + albumsList
     }
 }
